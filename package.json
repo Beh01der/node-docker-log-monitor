@@ -1,6 +1,6 @@
 {
   "name": "node-docker-log-monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Docker log monitor helping to capture and process logs from all running containers",
   "main": "index.js",
   "scripts": {
