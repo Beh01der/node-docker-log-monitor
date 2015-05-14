@@ -1,0 +1,31 @@
+{
+  "name": "node-docker-log-monitor",
+  "version": "1.0.0",
+  "description": "Docker log monitor helping to capture and process logs from all running containers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Beh01der/node-docker-log-monitor.git"
+  },
+  "keywords": [
+    "docker",
+    "monitor",
+    "container",
+    "event",
+    "logs"
+  ],
+  "author": "Andrey Chausenko <andrey.chausenko@gmail.com> (https://memz.co)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Beh01der/node-docker-log-monitor/issues"
+  },
+  "homepage": "https://github.com/Beh01der/node-docker-log-monitor",
+  "dependencies": {
+    "collections": "^1.2.3",
+    "node-docker-monitor": "^1.0.0",
+    "tail": "^0.4.0"
+  }
+}
