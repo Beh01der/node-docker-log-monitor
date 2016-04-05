@@ -65,7 +65,7 @@ grok.loadDefault(function (patterns) {
 ```
 
 ## API
-* **function(containerNames, handler, [docker])** - starts monitor for containers listed in *containerNames* array. Function *handler* will receive log events (lines). Even handler is a callback `function(event, container, docker)` where *event* - one line of log file, *container* - container [info](https://github.com/Beh01der/node-docker-monitor) and *docker* is Docker [object](https://github.com/apocas/dockerode). Parameter *docker* is a Docker [object](https://github.com/apocas/dockerode) which defines how monitor will connect to Docker service.
+* **function(containerNames, handler, [docker])** - starts monitor for containers listed in *containerNames* array. If empty array is provided, all containers will be monitored (except containers that have label "no_log_monitoring=1"). Function *handler* will receive log events (lines). Even handler is a callback `function(event, container, docker)` where *event* - one line of log file, *container* - container [info](https://github.com/Beh01der/node-docker-monitor) and *docker* is Docker [object](https://github.com/apocas/dockerode). Parameter *docker* is a Docker [object](https://github.com/apocas/dockerode) which defines how monitor will connect to Docker service.
 
 ## License 
 **ISC License (ISC)**
