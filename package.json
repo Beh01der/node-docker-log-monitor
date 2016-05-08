@@ -3,6 +3,7 @@
   "version": "1.0.4",
   "description": "Docker log monitor helping to capture and process logs from all running containers",
   "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
   "scripts": {
     "test": "node ./lib/test.js"
   },
@@ -25,7 +26,7 @@
   "homepage": "https://github.com/Beh01der/node-docker-log-monitor",
   "dependencies": {
     "collections": "3.0.0",
-    "node-docker-monitor": "1.0.5",
+    "node-docker-monitor": "1.0.8",
     "tail": "1.1.0"
   }
 }

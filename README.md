@@ -17,7 +17,7 @@ Following simple snippet starts monitoring logs of container `nginx` on local ho
 ```javascript
 var monitor = require('node-docker-log-monitor');
 
-monitor(['nginx'], function (event) {
+monitor(function (event) {
     console.log('Log event: ', event);
 });
 ```
@@ -31,41 +31,56 @@ var grok = require('node-grok');
 require('collections/shim-object');
 
 var empty = {};
-grok.loadDefault(function (patterns) {
-    console.log('Starting up docker log monitor...');
 
-    var SDC = require('statsd-client'),
-        sdc = new SDC({host: '172.17.42.1', port: 8125});
+var SDC = require('statsd-client'),
+    sdc = new SDC({host: '172.17.42.1', port: 8125});
 
-    var logPattern = patterns.createPattern('%{IP:client} \\[%{TIMESTAMP_ISO8601:timestamp}\\] "%{WORD:method}' +
-    ' %{URIHOST:site}%{URIPATHPARAM:url}" %{INT:code} %{INT:request} %{INT:response} - %{NUMBER:took}' +
-    ' \\[%{DATA:cache}\\] "%{DATA:mtag}" "%{DATA:agent}"');
+var patterns = grok.loadDefaultSync('grok-patterns');
+var logPattern = patterns.createPattern('%{IP:client} \\[%{TIMESTAMP_ISO8601:timestamp}\\] "%{WORD:method}' +
+' %{URIHOST:site}%{URIPATHPARAM:url}" %{INT:code} %{INT:request} %{INT:response} - %{NUMBER:took}' +
+' \\[%{DATA:cache}\\] "%{DATA:mtag}" "%{DATA:agent}"');
 
-    monitor(['nginx'], function (event) {
-        function logParsed(err, result) {
-            if (!err) {
-                Object.addEach(event, result || empty);
-                var code;
-                if (event.code && (code = parseInt(event.code))) {
-                    sdc.increment('router.hit');
-                    sdc.increment('router.hit.' + (Math.floor(code / 100) * 100));
-                }
+console.log('Starting up docker log monitor...');
+monitor(function (event) {
+    function logParsed(err, result) {
+        if (!err) {
+            Object.addEach(event, result || empty);
+            var code;
+            if (event.code && (code = parseInt(event.code))) {
+                sdc.increment('router.hit');
+                sdc.increment('router.hit.' + (Math.floor(code / 100) * 100));
             }
 
-            console.log(event);
+            if (event.url) {
+                if (event.url.indexOf('api/note') != -1) {
+                    sdc.increment('api.note.hit');
+                    sdc.increment('api.hit');
+                } else if (event.url.indexOf('api/policy') != -1) {
+                    sdc.increment('api.hit');
+                }
+            }
         }
 
-        if (event.log) {
-            logPattern.parse(event.log, logParsed);
-        } else {
-            console.log(event);
-        }
-    });
-}, ['grok-patterns']);
+        console.log(event);
+    }
+
+    if (event.log) {
+        logPattern.parse(event.log, logParsed);
+    } else {
+        console.log(event);
+    }
+});
 ```
 
 ## API
-* **function(containerNames, handler, [docker])** - starts monitor for containers listed in *containerNames* array. If empty array is provided, all containers will be monitored (except containers that have label "no_log_monitoring=1"). Function *handler* will receive log events (lines). Even handler is a callback `function(event, container, docker)` where *event* - one line of log file, *container* - container [info](https://github.com/Beh01der/node-docker-monitor) and *docker* is Docker [object](https://github.com/apocas/dockerode). Parameter *docker* is a Docker [object](https://github.com/apocas/dockerode) which defines how monitor will connect to Docker service.
+* **function(handler, [dockerOptions | dockerodeObject], [options])** - starts monitor Function *handler* will receive log events (lines). Event handler is a callback `function(event, container, docker)` where *event* - one line of log file, *container* - container [info](https://github.com/Beh01der/node-docker-monitor) and *docker* is Docker [object](https://github.com/apocas/dockerode). Parameter *dockerOpts* is a Docker [object](https://github.com/apocas/dockerode) which defines how monitor will connect to Docker service.
+    * `Options.strategy` - 'monitorAll' (default) | 'monitorSelected' - whether to monitor all containers or only selected. 
+    * `Option.selectorLabel` - 'node-docker-monitor' (default) - Label to be used on docker container to select or deselect container for monitoring.
+         
+## Option examples
+* `{}` or `{strategy: 'monitorAll'}` - monitor all containers except those that have label `node-docker-monitor` with *negative value* - `'0' | 'null' | 'false' | 'disable' | 'disabled' | ''`
+* `{strategy: 'monitorSelected'}` - monitor only containers that have label `node-docker-monitor` with *positive value* - any string except `'0' | 'null' | 'false' | 'disable' | 'disabled' | ''`
+* `{strategy: 'monitorSelected', selectorLabel: 'monitor-me'}` - monitor only containers that have label `monitor-me` with *positive value* - any string except `'0' | 'null' | 'false' | 'disable' | 'disabled' | ''`
 
 ## License 
 **ISC License (ISC)**
