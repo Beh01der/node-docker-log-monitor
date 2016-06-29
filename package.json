@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/Beh01der/node-docker-log-monitor",
   "dependencies": {
-    "collections": "3.0.0",
     "node-docker-monitor": "1.0.9",
     "tail": "1.1.0"
   }
